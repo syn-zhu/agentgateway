@@ -18,6 +18,7 @@ internal_benches = ["divan"]
 
 [dependencies]
 a2a-sdk.workspace = true
+aauth = { path = "../aauth" }
 agent-core.workspace = true
 agent-celx.workspace = true
 agent-hbone.workspace = true
