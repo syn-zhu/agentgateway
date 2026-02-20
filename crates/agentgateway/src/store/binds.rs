@@ -128,6 +128,8 @@ pub struct BackendPolicies {
 
 	pub session_persistence: Option<http::sessionpersistence::Policy>,
 
+	pub aauth: Option<http::aauth::AAuthXdsConfig>,
+
 	/// Internal-only override for destination endpoint selection.
 	/// Used for stateful MCP routing (session affinity).
 	/// Not exposed through config - set programmatically only.
@@ -161,6 +163,7 @@ impl BackendPolicies {
 				other.request_mirror
 			},
 			session_persistence: other.session_persistence.or(self.session_persistence),
+			aauth: other.aauth.or(self.aauth),
 			override_dest: other.override_dest.or(self.override_dest),
 		}
 	}
@@ -182,7 +185,6 @@ pub struct RoutePolicies {
 	pub jwt: Option<http::jwt::Jwt>,
 	pub basic_auth: Option<http::basicauth::BasicAuthentication>,
 	pub api_key: Option<http::apikey::APIKeyAuthentication>,
-	pub aauth: Option<http::aauth::AAuth>,
 	pub ext_authz: Option<ext_authz::ExtAuthz>,
 	pub ext_proc: Option<ext_proc::ExtProc>,
 	pub transformation: Option<http::transformation_cel::Transformation>,
@@ -416,8 +418,9 @@ impl Store {
 				TrafficPolicy::APIKey(p) => {
 					pol.api_key.get_or_insert_with(|| p.clone());
 				},
-				TrafficPolicy::AAuth(p) => {
-					pol.aauth.get_or_insert_with(|| p.clone());
+				TrafficPolicy::AAuth(_) | TrafficPolicy::AAuthConfig(_) => {
+					// AAuth is now a backend-level policy, not traffic-level.
+					// Traffic-level AAuth xDS messages are ignored here.
 				},
 				TrafficPolicy::Transformation(p) => {
 					pol.transformation.get_or_insert_with(|| p.clone());
@@ -660,6 +663,9 @@ impl Store {
 				},
 				BackendPolicy::McpAuthentication(p) => {
 					pol.mcp_authentication.get_or_insert_with(|| p.clone());
+				},
+				BackendPolicy::AAuth(p) => {
+					pol.aauth.get_or_insert_with(|| p.clone());
 				},
 			}
 		}

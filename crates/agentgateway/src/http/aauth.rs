@@ -787,3 +787,26 @@ impl FromStr for RequiredScheme {
         }
     }
 }
+
+/// AAuth config from xDS — holds configuration but no Client.
+/// Converted to full AAuth via `bind_client()` at request time.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct AAuthXdsConfig {
+    pub mode: Mode,
+    pub required_scheme: RequiredScheme,
+    pub timestamp_tolerance: u64,
+    pub challenge_config: Option<ChallengeConfig>,
+}
+
+impl AAuthXdsConfig {
+    pub fn bind_client(self, client: Client) -> AAuth {
+        AAuth::new(
+            self.mode,
+            self.required_scheme,
+            self.timestamp_tolerance,
+            self.challenge_config,
+            JwksCache::default(),
+            client,
+        )
+    }
+}

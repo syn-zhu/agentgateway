@@ -1887,6 +1887,8 @@ pub enum TrafficPolicy {
 	BasicAuth(crate::http::basicauth::BasicAuthentication),
 	APIKey(crate::http::apikey::APIKeyAuthentication),
 	AAuth(crate::http::aauth::AAuth),
+	/// AAuth config from xDS that needs Client binding before use
+	AAuthConfig(crate::http::aauth::AAuthXdsConfig),
 	Transformation(crate::http::transformation_cel::Transformation),
 	Csrf(crate::http::csrf::Csrf),
 
@@ -1918,6 +1920,7 @@ pub enum BackendPolicy {
 	#[serde(rename = "ai")]
 	AI(Arc<llm::Policy>),
 	SessionPersistence(http::sessionpersistence::Policy),
+	AAuth(crate::http::aauth::AAuthXdsConfig),
 
 	RequestHeaderModifier(filters::HeaderModifier),
 	ResponseHeaderModifier(filters::HeaderModifier),

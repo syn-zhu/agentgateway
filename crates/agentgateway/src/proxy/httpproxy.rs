@@ -69,7 +69,6 @@ async fn apply_request_policies(
 	log: &mut RequestLog,
 	req: &mut Request,
 	response_policies: &mut ResponsePolicies,
-	verification_authority: Option<&str>,
 ) -> Result<(), ProxyResponse> {
 	// CORS must run before authentication, authorization and rate limiting so that:
 	// 1. Preflight OPTIONS requests short-circuit without requiring credentials
@@ -80,31 +79,8 @@ async fn apply_request_policies(
 			.map_err(ProxyError::from)?
 			.apply(response_policies.headers())?;
 	}
-
-	// AAuth should run early, before other auth policies
-	if let Some(aauth) = &policies.aauth {
-		match aauth.apply(Some(log), req, verification_authority).await {
-			Ok(()) => {},
-			Err(crate::http::aauth::AAuthPolicyError::InsufficientLevel) => {
-				// Return challenge response
-				let challenge = aauth.build_challenge_response(None);
-				use ::http::Response as HttpResponse;
-				let mut resp = HttpResponse::builder()
-					.status(StatusCode::UNAUTHORIZED)
-					.body(Body::empty())
-					.map_err(|_| ProxyError::ProcessingString("failed to build response".to_string()))?;
-				*resp.status_mut() = StatusCode::UNAUTHORIZED;
-				resp.headers_mut().insert(
-					HeaderName::from_static("agent-auth"),
-					HeaderValue::from_str(&challenge).unwrap(),
-				);
-				return Err(ProxyResponse::DirectResponse(Box::new(resp)));
-			}
-			Err(e) => {
-				return Err(ProxyResponse::from(ProxyError::AAuthFailure(e.to_string())));
-			}
-		}
-	}
+	// Note: AAuth verification is now a backend-level policy (apply_backend_policies),
+	// where canonical authority can be derived from the target service identity.
 	if let Some(j) = &policies.jwt {
 		j.apply(Some(log), req)
 			.await
@@ -217,6 +193,7 @@ async fn apply_backend_policies(
 		request_redirect,
 		// TODO: implement session persistence
 		session_persistence: _,
+		aauth,
 		// Applied elsewhere
 		request_mirror: _,
 		// Applied elsewhere
@@ -258,6 +235,54 @@ async fn apply_backend_policies(
 			});
 		}
 		response_policies.a2a_type = a2a_type;
+	}
+
+	// AAuth verification with canonical authority derived from backend target.
+	// The canonical authority is the backend's service FQDN, enforcing SPEC Section 10.3.1:
+	// receivers MUST use configured canonical authority, NOT derive it from request headers.
+	if let Some(aauth_config) = aauth {
+		use crate::types::agent::BackendTarget;
+
+		let canonical_authority = match &backend_info.target {
+			BackendTarget::Service { hostname, port, .. } => {
+				match port {
+					Some(p) if *p != 80 && *p != 443 => format!("{}:{}", hostname, p),
+					_ => hostname.to_string(),
+				}
+			},
+			BackendTarget::Backend { name, namespace, .. } => {
+				format!("{}.{}", name, namespace)
+			},
+			BackendTarget::Invalid => {
+				return Err(ProxyResponse::from(
+					ProxyError::AAuthFailure("invalid backend target for AAuth".into())
+				));
+			},
+		};
+
+		// Bind xDS config with Client to create full AAuth instance
+		let aauth_instance = aauth_config.clone().bind_client(
+			backend_info.inputs.upstream.clone()
+		);
+
+		match aauth_instance.apply(log.as_deref_mut(), req, Some(&canonical_authority)).await {
+			Ok(()) => {},
+			Err(crate::http::aauth::AAuthPolicyError::InsufficientLevel) => {
+				let challenge = aauth_instance.build_challenge_response(None);
+				let mut resp = ::http::Response::builder()
+					.status(StatusCode::UNAUTHORIZED)
+					.body(Body::empty())
+					.map_err(|_| ProxyError::ProcessingString("failed to build response".into()))?;
+				resp.headers_mut().insert(
+					HeaderName::from_static("agent-auth"),
+					HeaderValue::from_str(&challenge).unwrap(),
+				);
+				return Err(ProxyResponse::DirectResponse(Box::new(resp)));
+			}
+			Err(e) => {
+				return Err(ProxyResponse::from(ProxyError::AAuthFailure(e.to_string())));
+			}
+		}
 	}
 
 	Ok(())
@@ -601,7 +626,7 @@ impl HTTPProxy {
 		.await
 		.snapshot_on_err(log, &mut req)?;
 
-		let listener_port = bind.address.port();
+		let _listener_port = bind.address.port();
 		Self::detect_misdirected(log, bind, &req, &selected_listener).snapshot_on_err(log, &mut req)?;
 
 		let (selected_route, path_match) = http::route::select_best_route(
@@ -656,18 +681,12 @@ impl HTTPProxy {
 		response_policies.ext_proc = maybe_ext_proc;
 		response_policies.gateway_ext_proc = maybe_gateway_ext_proc;
 
-		// Use route hostname (request host) and listener port for AAuth @authority verification
-		let verification_authority = {
-			let host_no_port = host.split(':').next().unwrap_or(&host);
-			Some(format!("{}:{}", host_no_port, listener_port))
-		};
 		apply_request_policies(
 			&route_policies,
 			self.policy_client(),
 			log,
 			&mut req,
 			response_policies,
-			verification_authority.as_deref(),
 		)
 		.await
 		.snapshot_on_err(log, &mut req)?;

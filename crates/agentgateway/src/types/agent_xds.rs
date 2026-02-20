@@ -1105,6 +1105,31 @@ impl TryFrom<&proto::agent::BackendPolicySpec> for BackendPolicy {
 					.collect::<Result<Vec<_>, _>>()?;
 				BackendPolicy::RequestMirror(mirrors)
 			},
+			Some(bps::Kind::Aauth(aauth)) => {
+				// Reuse TrafficPolicySpec.AAuth enums for backend-level AAuth
+				use crate::types::proto::agent::traffic_policy_spec::a_auth as tps_aauth;
+				let mode = match tps_aauth::Mode::try_from(aauth.mode)
+					.map_err(|_| ProtoError::EnumParse("invalid AAuth mode".into()))? {
+					tps_aauth::Mode::Strict => http::aauth::Mode::Strict,
+					tps_aauth::Mode::Optional => http::aauth::Mode::Optional,
+					tps_aauth::Mode::Permissive => http::aauth::Mode::Permissive,
+				};
+				let required_scheme = match tps_aauth::RequiredScheme::try_from(aauth.required_scheme)
+					.map_err(|_| ProtoError::EnumParse("invalid AAuth required_scheme".into()))? {
+					tps_aauth::RequiredScheme::Hwk => http::aauth::RequiredScheme::Hwk,
+					tps_aauth::RequiredScheme::Jwks => http::aauth::RequiredScheme::Jwks,
+					tps_aauth::RequiredScheme::JwtScheme => http::aauth::RequiredScheme::Jwt,
+				};
+				let challenge_config = aauth.challenge.as_ref().map(|c| http::aauth::ChallengeConfig {
+					auth_server: c.auth_server.clone(),
+				});
+				BackendPolicy::AAuth(http::aauth::AAuthXdsConfig {
+					mode,
+					required_scheme,
+					timestamp_tolerance: aauth.timestamp_tolerance,
+					challenge_config,
+				})
+			},
 			None => return Err(ProtoError::MissingRequiredField),
 		})
 	}
@@ -1547,6 +1572,31 @@ impl TryFrom<&proto::agent::TrafficPolicySpec> for TrafficPolicy {
 					})
 					.collect::<Result<Vec<_>, _>>()?;
 				TrafficPolicy::APIKey(http::apikey::APIKeyAuthentication::new(keys, mode))
+			},
+			Some(tps::Kind::Aauth(aauth)) => {
+				let mode = match tps::a_auth::Mode::try_from(aauth.mode)
+					.map_err(|_| ProtoError::EnumParse("invalid AAuth mode".to_string()))?
+				{
+					tps::a_auth::Mode::Strict => http::aauth::Mode::Strict,
+					tps::a_auth::Mode::Optional => http::aauth::Mode::Optional,
+					tps::a_auth::Mode::Permissive => http::aauth::Mode::Permissive,
+				};
+				let required_scheme = match tps::a_auth::RequiredScheme::try_from(aauth.required_scheme)
+					.map_err(|_| ProtoError::EnumParse("invalid AAuth required_scheme".to_string()))?
+				{
+					tps::a_auth::RequiredScheme::Hwk => http::aauth::RequiredScheme::Hwk,
+					tps::a_auth::RequiredScheme::Jwks => http::aauth::RequiredScheme::Jwks,
+					tps::a_auth::RequiredScheme::JwtScheme => http::aauth::RequiredScheme::Jwt,
+				};
+				let challenge_config = aauth.challenge.as_ref().map(|c| http::aauth::ChallengeConfig {
+					auth_server: c.auth_server.clone(),
+				});
+				TrafficPolicy::AAuthConfig(http::aauth::AAuthXdsConfig {
+					mode,
+					required_scheme,
+					timestamp_tolerance: aauth.timestamp_tolerance,
+					challenge_config,
+				})
 			},
 			Some(tps::Kind::HostRewrite(hr)) => {
 				let mode = tps::host_rewrite::Mode::try_from(hr.mode)?;

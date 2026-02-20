@@ -132,9 +132,15 @@ type BackendSimple struct {
 	// auth defines settings for managing authentication to the backend
 	// +optional
 	Auth *BackendAuth `json:"auth,omitempty"`
+
+	// aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+	// Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+	// The canonical authority is automatically derived from the target service FQDN.
+	// +optional
+	AAuthAuthentication *AAuthAuthentication `json:"aAuthAuthentication,omitempty"`
 }
 
-// +kubebuilder:validation:AtLeastOneOf=tcp;tls;http;auth;mcp
+// +kubebuilder:validation:AtLeastOneOf=tcp;tls;http;auth;aAuthAuthentication;mcp
 type BackendWithMCP struct {
 	BackendSimple `json:",inline"`
 
@@ -143,7 +149,7 @@ type BackendWithMCP struct {
 	MCP *BackendMCP `json:"mcp,omitempty"`
 }
 
-// +kubebuilder:validation:AtLeastOneOf=tcp;tls;http;auth;ai
+// +kubebuilder:validation:AtLeastOneOf=tcp;tls;http;auth;aAuthAuthentication;ai
 type BackendWithAI struct {
 	BackendSimple `json:",inline"`
 
@@ -152,7 +158,7 @@ type BackendWithAI struct {
 	AI *BackendAI `json:"ai,omitempty"`
 }
 
-// +kubebuilder:validation:AtLeastOneOf=tcp;tls;http;auth;mcp;ai
+// +kubebuilder:validation:AtLeastOneOf=tcp;tls;http;auth;aAuthAuthentication;mcp;ai
 type BackendFull struct {
 	BackendSimple `json:",inline"`
 
@@ -739,6 +745,60 @@ type SecretSelector struct {
 	// Label selector to select the target resource.
 	// +required
 	MatchLabels map[string]string `json:"matchLabels"`
+}
+
+// +kubebuilder:validation:Enum=Strict;Optional;Permissive
+type AAuthAuthenticationMode string
+
+const (
+	// AAuthAuthenticationModeStrict requires a valid signature on every request.
+	AAuthAuthenticationModeStrict AAuthAuthenticationMode = "Strict"
+	// AAuthAuthenticationModeOptional allows unsigned requests but verifies signatures if present.
+	AAuthAuthenticationModeOptional AAuthAuthenticationMode = "Optional"
+	// AAuthAuthenticationModePermissive logs signature verification results but does not reject.
+	AAuthAuthenticationModePermissive AAuthAuthenticationMode = "Permissive"
+)
+
+// +kubebuilder:validation:Enum=Hwk;Jwks;Jwt
+type AAuthRequiredScheme string
+
+const (
+	// AAuthRequiredSchemeHwk requires HTTP Working Key (Ed25519) signatures.
+	AAuthRequiredSchemeHwk AAuthRequiredScheme = "Hwk"
+	// AAuthRequiredSchemeJwks requires JWKS-based signatures.
+	AAuthRequiredSchemeJwks AAuthRequiredScheme = "Jwks"
+	// AAuthRequiredSchemeJwt requires JWT-based signatures.
+	AAuthRequiredSchemeJwt AAuthRequiredScheme = "Jwt"
+)
+
+// AAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+// Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+// The canonical authority is automatically derived from the target service FQDN.
+type AAuthAuthentication struct {
+	// mode controls enforcement level.
+	// +kubebuilder:default=Strict
+	// +optional
+	Mode AAuthAuthenticationMode `json:"mode,omitempty"`
+
+	// requiredScheme specifies the minimum signature scheme required.
+	// +kubebuilder:default=Hwk
+	// +optional
+	RequiredScheme AAuthRequiredScheme `json:"requiredScheme,omitempty"`
+
+	// timestampTolerance is the maximum age (in seconds) of a signature before it's rejected.
+	// +optional
+	TimestampTolerance *uint64 `json:"timestampTolerance,omitempty"`
+
+	// challenge configures the AAuth challenge response.
+	// +optional
+	Challenge *AAuthChallenge `json:"challenge,omitempty"`
+}
+
+// AAuthChallenge configures the AAuth challenge response sent in 401 responses.
+type AAuthChallenge struct {
+	// authServer is the URL of the authentication server.
+	// +optional
+	AuthServer string `json:"authServer,omitempty"`
 }
 
 type HostnameRewriteMode string

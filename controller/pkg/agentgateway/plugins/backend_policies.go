@@ -32,6 +32,7 @@ const (
 	backendHttpPolicySuffix       = ":backend-http"
 	mcpAuthorizationPolicySuffix  = ":mcp-authorization"
 	mcpAuthenticationPolicySuffix = ":mcp-authentication"
+	aauthBackendPolicySuffix      = ":aauth"
 )
 
 func TranslateInlineBackendPolicy(
@@ -120,6 +121,11 @@ func translateBackendPolicyToAgw(
 			logger.Error("error processing backend Auth", "err", err)
 			errs = append(errs, err)
 		}
+		agwPolicies = append(agwPolicies, pol...)
+	}
+
+	if backend.AAuthAuthentication != nil {
+		pol := translateBackendAAuth(policy, policyTarget)
 		agwPolicies = append(agwPolicies, pol...)
 	}
 
@@ -778,4 +784,57 @@ func buildGcpAuthPolicy(auth *agentgateway.GcpAuth) *api.BackendAuthPolicy {
 			},
 		},
 	}
+}
+
+func translateBackendAAuth(policy *agentgateway.AgentgatewayPolicy, target *api.PolicyTarget) []AgwPolicy {
+	aauth := policy.Spec.Backend.AAuthAuthentication
+	if aauth == nil {
+		return nil
+	}
+
+	// BackendPolicySpec.AAuth reuses the TrafficPolicySpec.AAuth enums in the proto definition.
+	p := &api.BackendPolicySpec_AAuth{}
+
+	switch aauth.Mode {
+	case agentgateway.AAuthAuthenticationModeOptional:
+		p.Mode = api.TrafficPolicySpec_AAuth_OPTIONAL
+	case agentgateway.AAuthAuthenticationModePermissive:
+		p.Mode = api.TrafficPolicySpec_AAuth_PERMISSIVE
+	default:
+		p.Mode = api.TrafficPolicySpec_AAuth_STRICT
+	}
+
+	switch aauth.RequiredScheme {
+	case agentgateway.AAuthRequiredSchemeJwks:
+		p.RequiredScheme = api.TrafficPolicySpec_AAuth_JWKS
+	case agentgateway.AAuthRequiredSchemeJwt:
+		p.RequiredScheme = api.TrafficPolicySpec_AAuth_JWT_SCHEME
+	default:
+		p.RequiredScheme = api.TrafficPolicySpec_AAuth_HWK
+	}
+
+	if aauth.TimestampTolerance != nil {
+		p.TimestampTolerance = *aauth.TimestampTolerance
+	} else {
+		p.TimestampTolerance = 60
+	}
+
+	if aauth.Challenge != nil {
+		p.Challenge = &api.TrafficPolicySpec_AAuth_Challenge{
+			AuthServer: aauth.Challenge.AuthServer,
+		}
+	}
+
+	aauthPolicy := &api.Policy{
+		Key:    policy.Namespace + "/" + policy.Name + aauthBackendPolicySuffix + attachmentName(target),
+		Name:   TypedResourceName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
+		Target: target,
+		Kind: &api.Policy_Backend{
+			Backend: &api.BackendPolicySpec{
+				Kind: &api.BackendPolicySpec_Aauth{Aauth: p},
+			},
+		},
+	}
+
+	return []AgwPolicy{{Policy: aauthPolicy}}
 }

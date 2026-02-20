@@ -684,6 +684,41 @@ message TrafficPolicySpec {
     Mode mode = 2;
   }
 
+  // AAuth (Agent Authentication) via RFC 9421 HTTP Message Signatures.
+  // Verifies that incoming requests are signed by an identified agent using
+  // Ed25519 key pairs, with identity verified against the agent's JWKS endpoint.
+  message AAuth {
+    // Validation mode for AAuth signature verification
+    enum Mode {
+      // A valid signature must be present (default)
+      STRICT = 0;
+      // If signature exists, validate it. Otherwise allow.
+      OPTIONAL = 1;
+      // Requests are never rejected. Useful for logging/claims extraction.
+      PERMISSIVE = 2;
+    }
+
+    // Minimum authentication level required
+    enum RequiredScheme {
+      // Any signature is sufficient (pseudonymous)
+      HWK = 0;
+      // Must have verifiable identity via JWKS
+      JWKS = 1;
+      // Must have authorization token (JWT-bound)
+      JWT_SCHEME = 2;
+    }
+
+    // Challenge configuration for 401 Agent-Auth responses
+    message Challenge {
+      string auth_server = 1;
+    }
+
+    Mode mode = 1;
+    RequiredScheme required_scheme = 2;
+    uint64 timestamp_tolerance = 3;
+    optional Challenge challenge = 4;
+  }
+
   message TransformationPolicy {
     message Transform {
       repeated HeaderTransformation set = 1;
@@ -763,6 +798,7 @@ message TrafficPolicySpec {
     BasicAuthentication basic_auth = 19;
     APIKey api_key_auth = 20;
     HostRewrite host_rewrite = 21;
+    AAuth aauth = 22;
   }
 }
 
@@ -999,6 +1035,15 @@ message BackendPolicySpec {
     Mode mode = 6;
   }
 
+  // AAuth backend verification — verifies incoming request signatures
+  // using the backend's service FQDN as canonical authority.
+  message AAuth {
+    TrafficPolicySpec.AAuth.Mode mode = 1;
+    TrafficPolicySpec.AAuth.RequiredScheme required_scheme = 2;
+    uint64 timestamp_tolerance = 3;
+    optional TrafficPolicySpec.AAuth.Challenge challenge = 4;
+  }
+
   oneof kind {
     A2a a2a = 1;
     InferenceRouting inference_routing = 2;
@@ -1013,6 +1058,7 @@ message BackendPolicySpec {
     RequestMirrors request_mirror = 11;
     BackendHTTP backend_http = 12;
     BackendTCP backend_tcp = 13;
+    AAuth aauth = 14;
   }
 }
 

@@ -226,6 +226,45 @@ spec:
                                   in the top level AgentgatewayBackend. policies are merged on a field-level basis, with order: AgentgatewayPolicy <
                                   AgentgatewayBackend < AgentgatewayBackend LLM provider (this field).
                                 properties:
+                                  aAuthAuthentication:
+                                    description: |-
+                                      aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                      Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                      The canonical authority is automatically derived from the target service FQDN.
+                                    properties:
+                                      challenge:
+                                        description: challenge configures the AAuth
+                                          challenge response.
+                                        properties:
+                                          authServer:
+                                            description: authServer is the URL of
+                                              the authentication server.
+                                            type: string
+                                        type: object
+                                      mode:
+                                        default: Strict
+                                        description: mode controls enforcement level.
+                                        enum:
+                                        - Strict
+                                        - Optional
+                                        - Permissive
+                                        type: string
+                                      requiredScheme:
+                                        default: Hwk
+                                        description: requiredScheme specifies the
+                                          minimum signature scheme required.
+                                        enum:
+                                        - Hwk
+                                        - Jwks
+                                        - Jwt
+                                        type: string
+                                      timestampTolerance:
+                                        description: timestampTolerance is the maximum
+                                          age (in seconds) of a signature before it's
+                                          rejected.
+                                        format: int64
+                                        type: integer
+                                    type: object
                                   ai:
                                     description: ai specifies settings for AI workloads.
                                       This is only applicable when connecting to a
@@ -477,6 +516,52 @@ spec:
                                                         policies for communicating
                                                         with AWS Bedrock Guardrails.
                                                       properties:
+                                                        aAuthAuthentication:
+                                                          description: |-
+                                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                                            The canonical authority is automatically derived from the target service FQDN.
+                                                          properties:
+                                                            challenge:
+                                                              description: challenge
+                                                                configures the AAuth
+                                                                challenge response.
+                                                              properties:
+                                                                authServer:
+                                                                  description: authServer
+                                                                    is the URL of
+                                                                    the authentication
+                                                                    server.
+                                                                  type: string
+                                                              type: object
+                                                            mode:
+                                                              default: Strict
+                                                              description: mode controls
+                                                                enforcement level.
+                                                              enum:
+                                                              - Strict
+                                                              - Optional
+                                                              - Permissive
+                                                              type: string
+                                                            requiredScheme:
+                                                              default: Hwk
+                                                              description: requiredScheme
+                                                                specifies the minimum
+                                                                signature scheme required.
+                                                              enum:
+                                                              - Hwk
+                                                              - Jwks
+                                                              - Jwt
+                                                              type: string
+                                                            timestampTolerance:
+                                                              description: timestampTolerance
+                                                                is the maximum age
+                                                                (in seconds) of a
+                                                                signature before it's
+                                                                rejected.
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
                                                         auth:
                                                           description: auth defines
                                                             settings for managing
@@ -875,6 +960,52 @@ spec:
                                                         policies for communicating
                                                         with Google Model Armor.
                                                       properties:
+                                                        aAuthAuthentication:
+                                                          description: |-
+                                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                                            The canonical authority is automatically derived from the target service FQDN.
+                                                          properties:
+                                                            challenge:
+                                                              description: challenge
+                                                                configures the AAuth
+                                                                challenge response.
+                                                              properties:
+                                                                authServer:
+                                                                  description: authServer
+                                                                    is the URL of
+                                                                    the authentication
+                                                                    server.
+                                                                  type: string
+                                                              type: object
+                                                            mode:
+                                                              default: Strict
+                                                              description: mode controls
+                                                                enforcement level.
+                                                              enum:
+                                                              - Strict
+                                                              - Optional
+                                                              - Permissive
+                                                              type: string
+                                                            requiredScheme:
+                                                              default: Hwk
+                                                              description: requiredScheme
+                                                                specifies the minimum
+                                                                signature scheme required.
+                                                              enum:
+                                                              - Hwk
+                                                              - Jwks
+                                                              - Jwt
+                                                              type: string
+                                                            timestampTolerance:
+                                                              description: timestampTolerance
+                                                                is the maximum age
+                                                                (in seconds) of a
+                                                                signature before it's
+                                                                rejected.
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
                                                         auth:
                                                           description: auth defines
                                                             settings for managing
@@ -1268,6 +1399,52 @@ spec:
                                                         policies for communicating
                                                         with OpenAI.
                                                       properties:
+                                                        aAuthAuthentication:
+                                                          description: |-
+                                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                                            The canonical authority is automatically derived from the target service FQDN.
+                                                          properties:
+                                                            challenge:
+                                                              description: challenge
+                                                                configures the AAuth
+                                                                challenge response.
+                                                              properties:
+                                                                authServer:
+                                                                  description: authServer
+                                                                    is the URL of
+                                                                    the authentication
+                                                                    server.
+                                                                  type: string
+                                                              type: object
+                                                            mode:
+                                                              default: Strict
+                                                              description: mode controls
+                                                                enforcement level.
+                                                              enum:
+                                                              - Strict
+                                                              - Optional
+                                                              - Permissive
+                                                              type: string
+                                                            requiredScheme:
+                                                              default: Hwk
+                                                              description: requiredScheme
+                                                                specifies the minimum
+                                                                signature scheme required.
+                                                              enum:
+                                                              - Hwk
+                                                              - Jwks
+                                                              - Jwt
+                                                              type: string
+                                                            timestampTolerance:
+                                                              description: timestampTolerance
+                                                                is the maximum age
+                                                                (in seconds) of a
+                                                                signature before it's
+                                                                rejected.
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
                                                         auth:
                                                           description: auth defines
                                                             settings for managing
@@ -1882,6 +2059,52 @@ spec:
                                                         policies for communicating
                                                         with AWS Bedrock Guardrails.
                                                       properties:
+                                                        aAuthAuthentication:
+                                                          description: |-
+                                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                                            The canonical authority is automatically derived from the target service FQDN.
+                                                          properties:
+                                                            challenge:
+                                                              description: challenge
+                                                                configures the AAuth
+                                                                challenge response.
+                                                              properties:
+                                                                authServer:
+                                                                  description: authServer
+                                                                    is the URL of
+                                                                    the authentication
+                                                                    server.
+                                                                  type: string
+                                                              type: object
+                                                            mode:
+                                                              default: Strict
+                                                              description: mode controls
+                                                                enforcement level.
+                                                              enum:
+                                                              - Strict
+                                                              - Optional
+                                                              - Permissive
+                                                              type: string
+                                                            requiredScheme:
+                                                              default: Hwk
+                                                              description: requiredScheme
+                                                                specifies the minimum
+                                                                signature scheme required.
+                                                              enum:
+                                                              - Hwk
+                                                              - Jwks
+                                                              - Jwt
+                                                              type: string
+                                                            timestampTolerance:
+                                                              description: timestampTolerance
+                                                                is the maximum age
+                                                                (in seconds) of a
+                                                                signature before it's
+                                                                rejected.
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
                                                         auth:
                                                           description: auth defines
                                                             settings for managing
@@ -2280,6 +2503,52 @@ spec:
                                                         policies for communicating
                                                         with Google Model Armor.
                                                       properties:
+                                                        aAuthAuthentication:
+                                                          description: |-
+                                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                                            The canonical authority is automatically derived from the target service FQDN.
+                                                          properties:
+                                                            challenge:
+                                                              description: challenge
+                                                                configures the AAuth
+                                                                challenge response.
+                                                              properties:
+                                                                authServer:
+                                                                  description: authServer
+                                                                    is the URL of
+                                                                    the authentication
+                                                                    server.
+                                                                  type: string
+                                                              type: object
+                                                            mode:
+                                                              default: Strict
+                                                              description: mode controls
+                                                                enforcement level.
+                                                              enum:
+                                                              - Strict
+                                                              - Optional
+                                                              - Permissive
+                                                              type: string
+                                                            requiredScheme:
+                                                              default: Hwk
+                                                              description: requiredScheme
+                                                                specifies the minimum
+                                                                signature scheme required.
+                                                              enum:
+                                                              - Hwk
+                                                              - Jwks
+                                                              - Jwt
+                                                              type: string
+                                                            timestampTolerance:
+                                                              description: timestampTolerance
+                                                                is the maximum age
+                                                                (in seconds) of a
+                                                                signature before it's
+                                                                rejected.
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
                                                         auth:
                                                           description: auth defines
                                                             settings for managing
@@ -3238,8 +3507,8 @@ spec:
                                 type: object
                                 x-kubernetes-validations:
                                 - message: at least one of the fields in [tcp tls
-                                    http auth ai] must be set
-                                  rule: '[has(self.tcp),has(self.tls),has(self.http),has(self.auth),has(self.ai)].filter(x,x==true).size()
+                                    http auth aAuthAuthentication ai] must be set
+                                  rule: '[has(self.tcp),has(self.tls),has(self.http),has(self.auth),has(self.aAuthAuthentication),has(self.ai)].filter(x,x==true).size()
                                     >= 1'
                               port:
                                 description: Port specifies the port to send the requests
@@ -3636,6 +3905,45 @@ spec:
                                 in the top level AgentgatewayBackend. Policies are merged on a field-level basis, with order: AgentgatewayPolicy <
                                 AgentgatewayBackend < AgentgatewayBackend MCP (this field).
                               properties:
+                                aAuthAuthentication:
+                                  description: |-
+                                    aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                    Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                    The canonical authority is automatically derived from the target service FQDN.
+                                  properties:
+                                    challenge:
+                                      description: challenge configures the AAuth
+                                        challenge response.
+                                      properties:
+                                        authServer:
+                                          description: authServer is the URL of the
+                                            authentication server.
+                                          type: string
+                                      type: object
+                                    mode:
+                                      default: Strict
+                                      description: mode controls enforcement level.
+                                      enum:
+                                      - Strict
+                                      - Optional
+                                      - Permissive
+                                      type: string
+                                    requiredScheme:
+                                      default: Hwk
+                                      description: requiredScheme specifies the minimum
+                                        signature scheme required.
+                                      enum:
+                                      - Hwk
+                                      - Jwks
+                                      - Jwt
+                                      type: string
+                                    timestampTolerance:
+                                      description: timestampTolerance is the maximum
+                                        age (in seconds) of a signature before it's
+                                        rejected.
+                                      format: int64
+                                      type: integer
+                                  type: object
                                 auth:
                                   description: auth defines settings for managing
                                     authentication to the backend
@@ -4152,8 +4460,8 @@ spec:
                               type: object
                               x-kubernetes-validations:
                               - message: at least one of the fields in [tcp tls http
-                                  auth mcp] must be set
-                                rule: '[has(self.tcp),has(self.tls),has(self.http),has(self.auth),has(self.mcp)].filter(x,x==true).size()
+                                  auth aAuthAuthentication mcp] must be set
+                                rule: '[has(self.tcp),has(self.tls),has(self.http),has(self.auth),has(self.aAuthAuthentication),has(self.mcp)].filter(x,x==true).size()
                                   >= 1'
                             port:
                               description: Port is the port number of the MCPBackend
@@ -4198,6 +4506,43 @@ spec:
                   policies controls policies for communicating with this backend. Policies may also be set in AgentgatewayPolicy;
                   policies are merged on a field-level basis, with policies on the Backend (this field) taking precedence.
                 properties:
+                  aAuthAuthentication:
+                    description: |-
+                      aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                      Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                      The canonical authority is automatically derived from the target service FQDN.
+                    properties:
+                      challenge:
+                        description: challenge configures the AAuth challenge response.
+                        properties:
+                          authServer:
+                            description: authServer is the URL of the authentication
+                              server.
+                            type: string
+                        type: object
+                      mode:
+                        default: Strict
+                        description: mode controls enforcement level.
+                        enum:
+                        - Strict
+                        - Optional
+                        - Permissive
+                        type: string
+                      requiredScheme:
+                        default: Hwk
+                        description: requiredScheme specifies the minimum signature
+                          scheme required.
+                        enum:
+                        - Hwk
+                        - Jwks
+                        - Jwt
+                        type: string
+                      timestampTolerance:
+                        description: timestampTolerance is the maximum age (in seconds)
+                          of a signature before it's rejected.
+                        format: int64
+                        type: integer
+                    type: object
                   ai:
                     description: ai specifies settings for AI workloads. This is only
                       applicable when connecting to a Backend of type 'ai'.
@@ -4440,6 +4785,46 @@ spec:
                                       description: policies controls policies for
                                         communicating with AWS Bedrock Guardrails.
                                       properties:
+                                        aAuthAuthentication:
+                                          description: |-
+                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                            The canonical authority is automatically derived from the target service FQDN.
+                                          properties:
+                                            challenge:
+                                              description: challenge configures the
+                                                AAuth challenge response.
+                                              properties:
+                                                authServer:
+                                                  description: authServer is the URL
+                                                    of the authentication server.
+                                                  type: string
+                                              type: object
+                                            mode:
+                                              default: Strict
+                                              description: mode controls enforcement
+                                                level.
+                                              enum:
+                                              - Strict
+                                              - Optional
+                                              - Permissive
+                                              type: string
+                                            requiredScheme:
+                                              default: Hwk
+                                              description: requiredScheme specifies
+                                                the minimum signature scheme required.
+                                              enum:
+                                              - Hwk
+                                              - Jwks
+                                              - Jwt
+                                              type: string
+                                            timestampTolerance:
+                                              description: timestampTolerance is the
+                                                maximum age (in seconds) of a signature
+                                                before it's rejected.
+                                              format: int64
+                                              type: integer
+                                          type: object
                                         auth:
                                           description: auth defines settings for managing
                                             authentication to the backend
@@ -4799,6 +5184,46 @@ spec:
                                       description: policies controls policies for
                                         communicating with Google Model Armor.
                                       properties:
+                                        aAuthAuthentication:
+                                          description: |-
+                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                            The canonical authority is automatically derived from the target service FQDN.
+                                          properties:
+                                            challenge:
+                                              description: challenge configures the
+                                                AAuth challenge response.
+                                              properties:
+                                                authServer:
+                                                  description: authServer is the URL
+                                                    of the authentication server.
+                                                  type: string
+                                              type: object
+                                            mode:
+                                              default: Strict
+                                              description: mode controls enforcement
+                                                level.
+                                              enum:
+                                              - Strict
+                                              - Optional
+                                              - Permissive
+                                              type: string
+                                            requiredScheme:
+                                              default: Hwk
+                                              description: requiredScheme specifies
+                                                the minimum signature scheme required.
+                                              enum:
+                                              - Hwk
+                                              - Jwks
+                                              - Jwt
+                                              type: string
+                                            timestampTolerance:
+                                              description: timestampTolerance is the
+                                                maximum age (in seconds) of a signature
+                                                before it's rejected.
+                                              format: int64
+                                              type: integer
+                                          type: object
                                         auth:
                                           description: auth defines settings for managing
                                             authentication to the backend
@@ -5154,6 +5579,46 @@ spec:
                                       description: policies controls policies for
                                         communicating with OpenAI.
                                       properties:
+                                        aAuthAuthentication:
+                                          description: |-
+                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                            The canonical authority is automatically derived from the target service FQDN.
+                                          properties:
+                                            challenge:
+                                              description: challenge configures the
+                                                AAuth challenge response.
+                                              properties:
+                                                authServer:
+                                                  description: authServer is the URL
+                                                    of the authentication server.
+                                                  type: string
+                                              type: object
+                                            mode:
+                                              default: Strict
+                                              description: mode controls enforcement
+                                                level.
+                                              enum:
+                                              - Strict
+                                              - Optional
+                                              - Permissive
+                                              type: string
+                                            requiredScheme:
+                                              default: Hwk
+                                              description: requiredScheme specifies
+                                                the minimum signature scheme required.
+                                              enum:
+                                              - Hwk
+                                              - Jwks
+                                              - Jwt
+                                              type: string
+                                            timestampTolerance:
+                                              description: timestampTolerance is the
+                                                maximum age (in seconds) of a signature
+                                                before it's rejected.
+                                              format: int64
+                                              type: integer
+                                          type: object
                                         auth:
                                           description: auth defines settings for managing
                                             authentication to the backend
@@ -5720,6 +6185,46 @@ spec:
                                       description: policies controls policies for
                                         communicating with AWS Bedrock Guardrails.
                                       properties:
+                                        aAuthAuthentication:
+                                          description: |-
+                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                            The canonical authority is automatically derived from the target service FQDN.
+                                          properties:
+                                            challenge:
+                                              description: challenge configures the
+                                                AAuth challenge response.
+                                              properties:
+                                                authServer:
+                                                  description: authServer is the URL
+                                                    of the authentication server.
+                                                  type: string
+                                              type: object
+                                            mode:
+                                              default: Strict
+                                              description: mode controls enforcement
+                                                level.
+                                              enum:
+                                              - Strict
+                                              - Optional
+                                              - Permissive
+                                              type: string
+                                            requiredScheme:
+                                              default: Hwk
+                                              description: requiredScheme specifies
+                                                the minimum signature scheme required.
+                                              enum:
+                                              - Hwk
+                                              - Jwks
+                                              - Jwt
+                                              type: string
+                                            timestampTolerance:
+                                              description: timestampTolerance is the
+                                                maximum age (in seconds) of a signature
+                                                before it's rejected.
+                                              format: int64
+                                              type: integer
+                                          type: object
                                         auth:
                                           description: auth defines settings for managing
                                             authentication to the backend
@@ -6079,6 +6584,46 @@ spec:
                                       description: policies controls policies for
                                         communicating with Google Model Armor.
                                       properties:
+                                        aAuthAuthentication:
+                                          description: |-
+                                            aAuthAuthentication configures AAuth (Agent Authentication) for this backend.
+                                            Verifies incoming request signatures using RFC 9421 HTTP Message Signatures.
+                                            The canonical authority is automatically derived from the target service FQDN.
+                                          properties:
+                                            challenge:
+                                              description: challenge configures the
+                                                AAuth challenge response.
+                                              properties:
+                                                authServer:
+                                                  description: authServer is the URL
+                                                    of the authentication server.
+                                                  type: string
+                                              type: object
+                                            mode:
+                                              default: Strict
+                                              description: mode controls enforcement
+                                                level.
+                                              enum:
+                                              - Strict
+                                              - Optional
+                                              - Permissive
+                                              type: string
+                                            requiredScheme:
+                                              default: Hwk
+                                              description: requiredScheme specifies
+                                                the minimum signature scheme required.
+                                              enum:
+                                              - Hwk
+                                              - Jwks
+                                              - Jwt
+                                              type: string
+                                            timestampTolerance:
+                                              description: timestampTolerance is the
+                                                maximum age (in seconds) of a signature
+                                                before it's rejected.
+                                              format: int64
+                                              type: integer
+                                          type: object
                                         auth:
                                           description: auth defines settings for managing
                                             authentication to the backend
@@ -7173,9 +7718,9 @@ spec:
                         <= 1'
                 type: object
                 x-kubernetes-validations:
-                - message: at least one of the fields in [tcp tls http auth mcp ai]
-                    must be set
-                  rule: '[has(self.tcp),has(self.tls),has(self.http),has(self.auth),has(self.mcp),has(self.ai)].filter(x,x==true).size()
+                - message: at least one of the fields in [tcp tls http auth aAuthAuthentication
+                    mcp ai] must be set
+                  rule: '[has(self.tcp),has(self.tls),has(self.http),has(self.auth),has(self.aAuthAuthentication),has(self.mcp),has(self.ai)].filter(x,x==true).size()
                     >= 1'
               static:
                 description: static represents a static hostname.
