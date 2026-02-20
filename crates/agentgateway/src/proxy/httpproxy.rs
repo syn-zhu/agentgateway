@@ -267,7 +267,8 @@ async fn apply_backend_policies(
 
 		match aauth_instance.apply(log.as_deref_mut(), req, Some(&canonical_authority)).await {
 			Ok(()) => {},
-			Err(crate::http::aauth::AAuthPolicyError::InsufficientLevel) => {
+			Err(crate::http::aauth::AAuthPolicyError::InsufficientLevel)
+			| Err(crate::http::aauth::AAuthPolicyError::MissingSignature) => {
 				let challenge = aauth_instance.build_challenge_response(None);
 				let mut resp = ::http::Response::builder()
 					.status(StatusCode::UNAUTHORIZED)
